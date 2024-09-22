@@ -61,10 +61,10 @@ function startDraftMode() {
             playersPicked: [], 
             players: team.querySelectorAll('.player').length,  // Update the players property
             round1TotalBudget: firstRoundBudget - captainRating + round1BudgetLimit,
-            round2TotalBudget: 0, // Will be calculated after round 1
-            round3TotalBudget: 0  // Will be calculated after round 2
-            round4TotalBudget: 0  // Will be calculated after round 3
-            round5TotalBudget: 0  // Will be calculated after round 4
+            round2TotalBudget: 0,  // Will be calculated after round 1
+            round3TotalBudget: 0,  // Will be calculated after round 2
+            round4TotalBudget: 0,  // Will be calculated after round 3
+            round5TotalBudget: 0   // Will be calculated after round 4
         };
     });
     teams.sort((a, b) => b.initialBudget - a.initialBudget || a.name.localeCompare(b.name));  // Sort in descending order by budget, then in ascending order by name
