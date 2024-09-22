@@ -1,4 +1,5 @@
-let currentBudget = 2700;  // Default budget
+
+let currentBudget = 3500;  // Default budget
 let playersData = [];      // Will hold player data
 let flagsData = [];
 let draftMode = false;
@@ -6,8 +7,15 @@ let round = 0;
 let teams = [];
 let captains = {};
 
+let maxPlayersPerTeam = 5;
+let numTeams = 12;
+
+let maxBudget = 3500; // Max total budget
+let firstRoundBudget = 1000;
 let round2BudgetLimit = 0;
 let round3BudgetLimit = 0;
+let round4BudgetLimit = 0;
+let round5BudgetLimit = 0;
 
 document.getElementById('draftModeButton').addEventListener('click', () => {
     draftMode = !draftMode;
@@ -26,6 +34,8 @@ function startDraftMode() {
     const round1BudgetLimit = parseInt(document.getElementById('round1Budget').value, 10);
     round2BudgetLimit = parseInt(document.getElementById('round2Budget').value, 10);
     round3BudgetLimit = parseInt(document.getElementById('round3Budget').value, 10);
+    round4BudgetLimit = parseInt(document.getElementById('round4Budget').value, 10);
+    round5BudgetLimit = parseInt(document.getElementById('round5Budget').value, 10);
 
     // Get all captains
     console.log('Captains:', captains);
@@ -46,13 +56,15 @@ function startDraftMode() {
         return {
             id: team.id,
             name: captainName,
-            initialBudget: 1000 - captainRating,
+            initialBudget: firstRoundBudget - captainRating,
             roundBudget: 0,
             playersPicked: [], 
             players: team.querySelectorAll('.player').length,  // Update the players property
-            round1TotalBudget: 1000 - captainRating + round1BudgetLimit,
+            round1TotalBudget: firstRoundBudget - captainRating + round1BudgetLimit,
             round2TotalBudget: 0, // Will be calculated after round 1
             round3TotalBudget: 0  // Will be calculated after round 2
+            round4TotalBudget: 0  // Will be calculated after round 3
+            round5TotalBudget: 0  // Will be calculated after round 4
         };
     });
     teams.sort((a, b) => b.initialBudget - a.initialBudget || a.name.localeCompare(b.name));  // Sort in descending order by budget, then in ascending order by name
@@ -69,16 +81,16 @@ function stopDraftMode(manualStop = false) {
     console.log('Teams player count:', teams.map(team => team.players));
 
 
-    // If not all teams have 4 players and the function was not called manually, do nothing
-    if (!manualStop && !teams.every(team => team.players === 3)) {
-        console.log('Draft mode not stopped: Not all teams have 4 players and the stop was not manual.');
+    // If not all teams have maxPlayersPerTeam players and the function was not called manually, do nothing
+    if (!manualStop && !teams.every(team => team.players === maxPlayersPerTeam)) {
+        console.log('Draft mode not stopped: Not all teams have ${maxPlayersPerTeam} players and the stop was not manual.');
         return;
     }
 
-    if (teams.every(team => team.players === 3)) {
+    if (teams.every(team => team.players === maxPlayersPerTeam)) {
         document.getElementById('draftModeButton').innerText = 'Start Draft Mode';
         draftMode = false;
-        console.log('Draft mode stopped: All teams have 4 players.');
+        console.log('Draft mode stopped: All teams have ${maxPlayersPerTeam} players.');
         return;
     }
     
@@ -98,9 +110,9 @@ function stopDraftMode(manualStop = false) {
     // Remove team highlights
     document.querySelectorAll('.team').forEach(team => team.style.outline = '');
 
-    // Add player slots to each team until the total number of players and slots is 4
+    // Add player slots to each team until the total number of players and slots is maxPlayersPerTeam+1 (need captain too)
     document.querySelectorAll('.team').forEach(team => {
-        while (team.querySelectorAll('.player, .player-slot').length < 4) {
+        while (team.querySelectorAll('.player, .player-slot').length < (maxPlayersPerTeam+1)) {
             const playerSlot = document.createElement('div');
             playerSlot.className = 'player-slot';
             team.appendChild(playerSlot);
@@ -116,18 +128,18 @@ function stopDraftMode(manualStop = false) {
 }
 
 function highlightNextTeam() {
-    console.log('highlightNextTeam called');
+    //console.log('highlightNextTeam called');
     console.log('Current round:', round);
     console.log('Teams player count:', teams.map(team => team.players));
 
     // Remove highlight from all teams
     document.querySelectorAll('.team').forEach(team => team.style.outline = '');
 
-    // If all teams have 4 players, stop the draft mode
+    // If all teams have maxPlayersPerTeam players, stop the draft mode
     if (teams.every(team => team.players === round)) {
         round++;
         // Do not exceed the maximum number of rounds
-        if (round > 3) {
+        if (round > maxPlayersPerTeam) {
             console.log('Maximum number of rounds reached.');
             stopDraftMode();
             return;
@@ -143,6 +155,20 @@ function highlightNextTeam() {
                 const playerPickedRating = team.playersPicked[1] || 0;  // Get the rating of the player picked in round 2
                 team.round3TotalBudget = team.round2TotalBudget - playerPickedRating + round3BudgetLimit;
                 team.roundBudget = team.round3TotalBudget;
+                updateTeamInfo(team.id);
+            });
+        } else if (round === 4) {
+            teams.forEach(team => {
+                const playerPickedRating = team.playersPicked[1] || 0;  // Get the rating of the player picked in round 3
+                team.round4TotalBudget = team.round3TotalBudget - playerPickedRating + round4BudgetLimit;
+                team.roundBudget = team.round4TotalBudget;
+                updateTeamInfo(team.id);
+            });
+        } else if (round === 5) {
+            teams.forEach(team => {
+                const playerPickedRating = team.playersPicked[1] || 0;  // Get the rating of the player picked in round 4
+                team.round5TotalBudget = team.round4TotalBudget - playerPickedRating + round5BudgetLimit;
+                team.roundBudget = team.round5TotalBudget;
                 updateTeamInfo(team.id);
             });
         }
@@ -227,7 +253,7 @@ function assignCaptainsToTeams(players) {
 }
 
 function createTeamElements(players) {
-    for (let i = 1; i <= 12; i++) {
+    for (let i = 1; i <= numTeams; i++) {
         const teamContainer = document.getElementById(`team${i}`);
         teamContainer.innerHTML = ''; // Clear team
 
@@ -257,8 +283,8 @@ function createTeamElements(players) {
             };
         }
 
-        // Add three empty slots
-        for (let j = 0; j < 3; j++) {
+        // Add maxPlayersPerTeam empty slots
+        for (let j = 0; j < maxPlayersPerTeam; j++) {
             const slot = document.createElement('div');
             slot.className = 'player-slot';
             teamContainer.appendChild(slot);
@@ -334,7 +360,7 @@ function initializeDragAndDrop() {
                 // Create a new player slot in the old team if the player was moved from another team
                 if (oldTeamId.startsWith('team') && player.parentElement.id !== oldTeamId) {
                     const oldTeam = document.getElementById(oldTeamId);
-                    if (oldTeam.querySelectorAll('.player').length < 4) {
+                    if (oldTeam.querySelectorAll('.player').length < (maxPlayersPerTeam+1)) {
                         const playerSlot = document.createElement('div');
                         playerSlot.className = 'player-slot';
                         oldTeam.appendChild(playerSlot);
@@ -375,7 +401,7 @@ function initializeDragAndDrop() {
         }
     });
     function fillEmptySlots(team) {
-        while (team.querySelectorAll('.player, .player-slot').length < 4) {
+        while (team.querySelectorAll('.player, .player-slot').length < (maxPlayersPerTeam+1)) {
             const playerSlot = document.createElement('div');
             playerSlot.className = 'player-slot';
             team.appendChild(playerSlot);
@@ -403,6 +429,10 @@ function canAddPlayerToTeam(team, player) {
                 roundBudget = teamData.round2TotalBudget;
             } else if (round === 3) {
                 roundBudget = teamData.round3TotalBudget;
+            } else if (round === 4) {
+                roundBudget = teamData.round4TotalBudget;
+            } else if (round === 5) {
+                roundBudget = teamData.round5TotalBudget;
             }
             console.log(`Team ID: ${team.id}, Round: ${round}, Round Budget: ${roundBudget}`);  // Log the round budget for the team
 
@@ -477,7 +507,7 @@ function resetTeams() {
 
     // Reset playersData and currentBudget to their initial state
     playersData = [];
-    currentBudget = 2700;
+    currentBudget = maxBudget;
 
     // Clear saved team data
     localStorage.removeItem('teams');
@@ -492,7 +522,7 @@ function resetTeams() {
 }
 
 function initializeTeams() {
-    for (let i = 1; i <= 12; i++) {
+    for (let i = 1; i <= numTeams; i++) {
         updateTeamInfo(`team${i}`);
     }
 }
@@ -516,10 +546,9 @@ function saveData() {
 }
 
 // Load data from localStorage
-// Load data from localStorage
 function loadData() {
     playersData = JSON.parse(localStorage.getItem('playersData')) || [];
-    currentBudget = parseInt(localStorage.getItem('currentBudget'), 10) || 2700;
+    currentBudget = parseInt(localStorage.getItem('currentBudget'), 10) || maxBudget;
     const savedTeams = JSON.parse(localStorage.getItem('teams')) || [];
     savedTeams.forEach(savedTeam => {
         const team = document.getElementById(savedTeam.id);
