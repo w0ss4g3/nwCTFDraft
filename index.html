@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TDM Cup Draft Team Simulator v0.1</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <h1>TDM Cup Draft Team Simulator v0.2</h1>
+
+    <div class="budget-container">
+        <label for="budgetInput">Set Team Budget: </label>
+        <input type="number" id="budgetInput" value="2700">
+        <button onclick="setBudget()">Apply Budget</button>
+        <button onclick="resetTeams()">Reset Teams</button>
+        <button id="draftModeButton">Start Draft Mode</button>
+    
+    
+    <div>
+        <label for="round1Budget">Round 1 Budget Limit:</label>
+        <input type="number" id="round1Budget" value="600">
+        <label for="round2Budget">Round 2 Budget Limit:</label>
+        <input type="number" id="round2Budget" value="600">
+        <label for="round3Budget">Round 3 Budget Limit:</label>
+        <input type="number" id="round3Budget" value="500">
+    </div>
+    </div>
+    <div class="container">
+        <div id="players" class="players">
+            <h2>Player List</h2>
+        </div>
+        <div id="teams" class="teams">
+            <div class="team-container">
+                <h3>Team 1</h3>
+                <div class="team-info">
+                    <span id="team1-rating">Rating: 0</span> /
+                    <span id="team1-budget">Remaining Budget: 2700</span><br>
+                    <span id="team1-round-budget">Round Budget Limit: 0</span>
+                </div>
+                <div id="team1" class="team"></div>
+            </div>
+            <div class="team-container">
+                <h3>Team 2</h3>
+                <div class="team-info">
+                    <span id="team2-rating">Rating: 0</span> /
+                    <span id="team2-budget">Remaining Budget: 2700</span><br>
+                    <span id="team2-round-budget">Round Budget Limit: 0</span>
+                </div>
+                <div id="team2" class="team"></div>
+            </div>
+            <div class="team-container">
+                <h3>Team 3</h3>
+                <div class="team-info">
+                    <span id="team3-rating">Rating: 0</span> /
+                    <span id="team3-budget">Remaining Budget: 2700</span><br>
+                    <span id="team3-round-budget">Round Budget Limit: 0</span>
+                </div>
+                <div id="team3" class="team"></div>
+            </div>
+                <div class="team-container">
+                <h3>Team 4</h3>
+                <div class="team-info">
+                    <span id="team4-rating">Rating: 0</span> /
+                    <span id="team4-budget">Remaining Budget: 2700</span><br>
+                    <span id="team4-round-budget">Round Budget Limit: 0</span>
+                </div>
+                <div id="team4" class="team"></div>
+            </div>
+            <div class="team-container">
+                <h3>Team 5</h3>
+                <div class="team-info">
+                    <span id="team5-rating">Rating: 0</span> /
+                    <span id="team5-budget">Remaining Budget: 2700</span><br>
+                    <span id="team5-round-budget">Round Budget Limit: 0</span>
+                </div>
+                <div id="team5" class="team"></div>
+            </div>
+            <div class="team-container">
+                <h3>Team 6</h3>
+                <div class="team-info">
+                    <span id="team6-rating">Rating: 0</span> /
+                    <span id="team6-budget">Remaining Budget: 2700</span><br>
+                    <span id="team6-round-budget">Round Budget Limit: 0</span>
+                </div>
+                <div id="team6" class="team"></div>
+            </div>
+            <div class="team-container">
+                <h3>Team 7</h3>
+                <div class="team-info">
+                    <span id="team7-rating">Rating: 0</span> /
+                    <span id="team7-budget">Remaining Budget: 2700</span><br>
+                    <span id="team7-round-budget">Round Budget Limit: 0</span>
+                </div>
+                <div id="team7" class="team"></div>
+            </div>
+            <div class="team-container">
+                <h3>Team 8</h3>
+                <div class="team-info">
+                    <span id="team8-rating">Rating: 0</span> /
+                    <span id="team8-budget">Remaining Budget: 2700</span><br>
+                    <span id="team8-round-budget">Round Budget Limit: 0</span>
+                </div>
+                <div id="team8" class="team"></div>
+            </div>
+            <div class="team-container">
+                <h3>Team 9</h3>
+                <div class="team-info">
+                    <span id="team9-rating">Rating: 0</span> /
+                    <span id="team9-budget">Remaining Budget: 2700</span><br>
+                    <span id="team9-round-budget">Round Budget Limit: 0</span>
+                </div>
+                <div id="team9" class="team"></div>
+            </div>
+            <div class="team-container">
+                <h3>Team 10</h3>
+                <div class="team-info">
+                    <span id="team10-rating">Rating: 0</span> /
+                    <span id="team10-budget">Remaining Budget: 2700</span><br>
+                    <span id="team10-round-budget">Round Budget Limit: 0</span>
+                </div>
+                <div id="team10" class="team"></div>
+            </div>
+            <div class="team-container">
+                <h3>Team 11</h3>
+                <div class="team-info">
+                    <span id="team11-rating">Rating: 0</span> /
+                    <span id="team11-budget">Remaining Budget: 2700</span><br>
+                    <span id="team11-round-budget">Round Budget Limit: 0</span>
+                </div>
+                <div id="team11" class="team"></div>
+            </div>
+            <div class="team-container">
+                <h3>Team 12</h3>
+                <div class="team-info">
+                    <span id="team12-rating">Rating: 0</span> /
+                    <span id="team12-budget">Remaining Budget: 2700</span><br>
+                    <span id="team12-round-budget">Round Budget Limit: 0</span>
+                </div>
+                <div id="team12" class="team"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
