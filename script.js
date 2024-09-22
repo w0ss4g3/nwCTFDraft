@@ -216,7 +216,7 @@ function loadPlayers() {
 function createPlayerElements(players) {
     const playersContainer = document.getElementById('players');
     playersContainer.innerHTML = ''; // Clear existing players
-    players.filter(player => player.Role === 'Player').forEach(player => {
+    players.filter(player => player.Role === 'Player' || player.Role === 'Co-Captain').forEach(player => {
         const playerDiv = document.createElement('div');
         playerDiv.className = 'player';
         playerDiv.draggable = true;
