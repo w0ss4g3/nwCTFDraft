@@ -7,15 +7,15 @@ let round = 0;
 let teams = [];
 let captains = {};
 
-let maxPlayersPerTeam = 5;
-let numTeams = 12;
+let maxPlayersPerTeam = 4;
+let numTeams = 15;
 
 let maxBudget = 3500; // Max total budget
 let firstRoundBudget = 1000;
 let round2BudgetLimit = 0;
 let round3BudgetLimit = 0;
 let round4BudgetLimit = 0;
-let round5BudgetLimit = 0;
+//let round5BudgetLimit = 0;
 
 document.getElementById('draftModeButton').addEventListener('click', () => {
     draftMode = !draftMode;
@@ -35,7 +35,7 @@ function startDraftMode() {
     round2BudgetLimit = parseInt(document.getElementById('round2Budget').value, 10);
     round3BudgetLimit = parseInt(document.getElementById('round3Budget').value, 10);
     round4BudgetLimit = parseInt(document.getElementById('round4Budget').value, 10);
-    round5BudgetLimit = parseInt(document.getElementById('round5Budget').value, 10);
+    //round5BudgetLimit = parseInt(document.getElementById('round5Budget').value, 10);
 
     // Get all captains
     console.log('Captains:', captains);
@@ -64,7 +64,7 @@ function startDraftMode() {
             round2TotalBudget: 0,  // Will be calculated after round 1
             round3TotalBudget: 0,  // Will be calculated after round 2
             round4TotalBudget: 0,  // Will be calculated after round 3
-            round5TotalBudget: 0   // Will be calculated after round 4
+            //round5TotalBudget: 0   // Will be calculated after round 4
         };
     });
     teams.sort((a, b) => b.initialBudget - a.initialBudget || a.name.localeCompare(b.name));  // Sort in descending order by budget, then in ascending order by name
@@ -164,14 +164,14 @@ function highlightNextTeam() {
                 team.roundBudget = team.round4TotalBudget;
                 updateTeamInfo(team.id);
             });
-        } else if (round === 5) {
+        }/* else if (round === 5) {
             teams.forEach(team => {
                 const playerPickedRating = team.playersPicked[1] || 0;  // Get the rating of the player picked in round 4
                 team.round5TotalBudget = team.round4TotalBudget - playerPickedRating + round5BudgetLimit;
                 team.roundBudget = team.round5TotalBudget;
                 updateTeamInfo(team.id);
             });
-        }
+        }*/
         // Re-sort teams based on round budget
         teams.sort((a, b) => b.roundBudget - a.roundBudget || a.name.localeCompare(b.name));
         
@@ -431,9 +431,9 @@ function canAddPlayerToTeam(team, player) {
                 roundBudget = teamData.round3TotalBudget;
             } else if (round === 4) {
                 roundBudget = teamData.round4TotalBudget;
-            } else if (round === 5) {
+            }/* else if (round === 5) {
                 roundBudget = teamData.round5TotalBudget;
-            }
+            }*/
             console.log(`Team ID: ${team.id}, Round: ${round}, Round Budget: ${roundBudget}`);  // Log the round budget for the team
 
             // If the player can be added to the team, add the player's rating to the playersPicked array
