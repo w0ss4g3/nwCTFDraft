@@ -1,5 +1,5 @@
 
-let currentBudget = 3500;  // Default budget
+let currentBudget = 3300;  // Default budget
 let playersData = [];      // Will hold player data
 let flagsData = [];
 let draftMode = false;
@@ -10,7 +10,7 @@ let captains = {};
 let maxPlayersPerTeam = 4;
 let numTeams = 15;
 
-let maxBudget = 3500; // Max total budget
+let maxBudget = 3300; // Max total budget
 let firstRoundBudget = 1000;
 let round2BudgetLimit = 0;
 let round3BudgetLimit = 0;
