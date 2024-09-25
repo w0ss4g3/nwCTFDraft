@@ -159,14 +159,14 @@ function highlightNextTeam() {
             });
         } else if (round === 4) {
             teams.forEach(team => {
-                const playerPickedRating = team.playersPicked[1] || 0;  // Get the rating of the player picked in round 3
+                const playerPickedRating = team.playersPicked[2] || 0;  // Get the rating of the player picked in round 3
                 team.round4TotalBudget = team.round3TotalBudget - playerPickedRating + round4BudgetLimit;
                 team.roundBudget = team.round4TotalBudget;
                 updateTeamInfo(team.id);
             });
         }/* else if (round === 5) {
             teams.forEach(team => {
-                const playerPickedRating = team.playersPicked[1] || 0;  // Get the rating of the player picked in round 4
+                const playerPickedRating = team.playersPicked[3] || 0;  // Get the rating of the player picked in round 4
                 team.round5TotalBudget = team.round4TotalBudget - playerPickedRating + round5BudgetLimit;
                 team.roundBudget = team.round5TotalBudget;
                 updateTeamInfo(team.id);
