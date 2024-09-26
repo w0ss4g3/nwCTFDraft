@@ -510,9 +510,9 @@ function resetTeams() {
     currentBudget = maxBudget;
 
     // Clear saved team data
-    localStorage.removeItem('teams');
-    localStorage.removeItem('playersData');
-    localStorage.removeItem('currentBudget');
+    sessionStorage.removeItem('teams');
+    sessionStorage.removeItem('playersData');
+    sessionStorage.removeItem('currentBudget');
 
     // Reload players and flags data
     loadPlayers();
@@ -535,9 +535,9 @@ function sortPlayers() {
 }
 
 function saveData() {
-    localStorage.setItem('playersData', JSON.stringify(playersData));
-    localStorage.setItem('currentBudget', currentBudget.toString());
-    localStorage.setItem('teams', JSON.stringify(Array.from(document.querySelectorAll('.team')).map(team => {
+    sessionStorage.setItem('playersData', JSON.stringify(playersData));
+    sessionStorage.setItem('currentBudget', currentBudget.toString());
+    sessionStorage.setItem('teams', JSON.stringify(Array.from(document.querySelectorAll('.team')).map(team => {
         return {
             id: team.id,
             players: Array.from(team.querySelectorAll('.player')).map(player => player.id)
@@ -545,11 +545,11 @@ function saveData() {
     })));
 }
 
-// Load data from localStorage
+// Load data from sessionStorage
 function loadData() {
-    playersData = JSON.parse(localStorage.getItem('playersData')) || [];
-    currentBudget = parseInt(localStorage.getItem('currentBudget'), 10) || maxBudget;
-    const savedTeams = JSON.parse(localStorage.getItem('teams')) || [];
+    playersData = JSON.parse(sessionStorage.getItem('playersData')) || [];
+    currentBudget = parseInt(sessionStorage.getItem('currentBudget'), 10) || maxBudget;
+    const savedTeams = JSON.parse(sessionStorage.getItem('teams')) || [];
     savedTeams.forEach(savedTeam => {
         const team = document.getElementById(savedTeam.id);
         const playerSlots = Array.from(team.querySelectorAll('.player-slot'));
