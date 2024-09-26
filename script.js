@@ -10,7 +10,7 @@ let captains = {};
 let maxPlayersPerTeam = 4;
 let numTeams = 15;
 
-let maxBudget = 3300; // Max total budget
+let defaultBudget = 3300; // default budget, only used on reset/startup
 let firstRoundBudget = 1000;
 let round2BudgetLimit = 0;
 let round3BudgetLimit = 0;
@@ -83,14 +83,18 @@ function stopDraftMode(manualStop = false) {
 
     // If not all teams have maxPlayersPerTeam players and the function was not called manually, do nothing
     if (!manualStop && !teams.every(team => team.players === maxPlayersPerTeam)) {
-        console.log('Draft mode not stopped: Not all teams have ${maxPlayersPerTeam} players and the stop was not manual.');
+        console.log(`Draft mode not stopped: Not all teams have ${maxPlayersPerTeam} players and the stop was not manual.`);
         return;
     }
 
     if (teams.every(team => team.players === maxPlayersPerTeam)) {
         document.getElementById('draftModeButton').innerText = 'Start Draft Mode';
         draftMode = false;
-        console.log('Draft mode stopped: All teams have ${maxPlayersPerTeam} players.');
+        saveData();
+        console.log(`Draft mode stopped: All teams have ${maxPlayersPerTeam} players.`);
+        // Workaround to deal with some odd bugs when draft mode completes, e.g. the last player picked not appearing in the last team.
+        loadData();
+        loadPlayers();
         return;
     }
     
@@ -112,11 +116,7 @@ function stopDraftMode(manualStop = false) {
 
     // Add player slots to each team until the total number of players and slots is maxPlayersPerTeam+1 (need captain too)
     document.querySelectorAll('.team').forEach(team => {
-        while (team.querySelectorAll('.player, .player-slot').length < (maxPlayersPerTeam+1)) {
-            const playerSlot = document.createElement('div');
-            playerSlot.className = 'player-slot';
-            team.appendChild(playerSlot);
-        }
+        fillEmptySlots(team);
     });
 
     document.querySelectorAll('.player.drafted').forEach(player => {
@@ -148,7 +148,7 @@ function highlightNextTeam() {
                 const playerPickedRating = team.playersPicked[0] || 0;  // Get the rating of the player picked in round 1
                 team.round2TotalBudget = team.round1TotalBudget - playerPickedRating + round2BudgetLimit;
                 team.roundBudget = team.round2TotalBudget;
-                updateTeamInfo(team.id);                
+                updateTeamInfo(team.id);
             });
         } else if (round === 3) {
             teams.forEach(team => {
@@ -174,7 +174,6 @@ function highlightNextTeam() {
         }*/
         // Re-sort teams based on round budget
         teams.sort((a, b) => b.roundBudget - a.roundBudget || a.name.localeCompare(b.name));
-        
     }
     // Find the next team that can pick a player
     const nextTeam = teams.find(team => team.players < round);
@@ -239,6 +238,18 @@ function createPlayerElements(players) {
     });
 }
 
+function fillEmptySlots(team) {
+    if (!(team.id) || team.id === 'players') {
+      return;
+    }
+    
+    while (team.querySelectorAll('.player, .player-slot').length < (maxPlayersPerTeam+1)) {
+        const playerSlot = document.createElement('div');
+        playerSlot.className = 'player-slot';
+        team.appendChild(playerSlot);
+    }
+};
+
 function assignCaptainsToTeams(players) {
     // Get all captains and sort them by rating
     const captains = players.filter(player => player.Role === 'Captain');
@@ -283,12 +294,8 @@ function createTeamElements(players) {
             };
         }
 
-        // Add maxPlayersPerTeam empty slots
-        for (let j = 0; j < maxPlayersPerTeam; j++) {
-            const slot = document.createElement('div');
-            slot.className = 'player-slot';
-            teamContainer.appendChild(slot);
-        }
+        // Add empty slots
+        fillEmptySlots(teamContainer);
     }
 }
 
@@ -337,7 +344,6 @@ function initializeDragAndDrop() {
                             // After player has been added, check whether draft mode should continue
                             highlightNextTeam();
                         }
-
                     }
                 } else {
                     if (canAddPlayerToTeam(team, player)) {
@@ -354,18 +360,16 @@ function initializeDragAndDrop() {
                         saveData();  // Save the teams after a player is moved
                     } else {
                         document.getElementById('players').appendChild(player);
+                        fillEmptySlots(team);
+                        sortPlayers();
                     }
                 }
             
                 // Create a new player slot in the old team if the player was moved from another team
-                if (oldTeamId.startsWith('team') && player.parentElement.id !== oldTeamId) {
+                if (oldTeamId.startsWith('team') && player.parentElement.id.startsWith('team') && player.parentElement.id !== oldTeamId) {
                     const oldTeam = document.getElementById(oldTeamId);
-                    if (oldTeam.querySelectorAll('.player').length < (maxPlayersPerTeam+1)) {
-                        const playerSlot = document.createElement('div');
-                        playerSlot.className = 'player-slot';
-                        oldTeam.appendChild(playerSlot);
-                    }
-                    updateTeamInfo(oldTeamId);  // Update the team info of the old team
+                    fillEmptySlots(oldTeam);
+                    updateTeamInfo(oldTeamId); // Update the team info of the old team
                     sortPlayers();
                 }
             }
@@ -393,6 +397,7 @@ function initializeDragAndDrop() {
             // Update the team info of the old team before removing the player
             if (oldTeamId !== 'players') {
                 updateTeamInfo(oldTeamId);
+                fillEmptySlots(oldTeamId);
             }
             // Sort players in the player list
             sortPlayers();
@@ -400,13 +405,6 @@ function initializeDragAndDrop() {
             saveData();
         }
     });
-    function fillEmptySlots(team) {
-        while (team.querySelectorAll('.player, .player-slot').length < (maxPlayersPerTeam+1)) {
-            const playerSlot = document.createElement('div');
-            playerSlot.className = 'player-slot';
-            team.appendChild(playerSlot);
-        }
-    }
 }
 
 function canAddPlayerToTeam(team, player) {
@@ -490,6 +488,8 @@ function updateTeamInfo(teamId) {
             roundBudgetSpan.style.display = "none";  // Hide the round budget limit
         }
     }
+    // Bit of a workaround to force empty slots to appear when they were going missing from teams unexpectedly.
+    fillEmptySlots(team);
 }
 
 function setBudget() {
@@ -507,7 +507,7 @@ function resetTeams() {
 
     // Reset playersData and currentBudget to their initial state
     playersData = [];
-    currentBudget = maxBudget;
+    currentBudget = defaultBudget;
 
     // Clear saved team data
     sessionStorage.removeItem('teams');
@@ -548,7 +548,7 @@ function saveData() {
 // Load data from sessionStorage
 function loadData() {
     playersData = JSON.parse(sessionStorage.getItem('playersData')) || [];
-    currentBudget = parseInt(sessionStorage.getItem('currentBudget'), 10) || maxBudget;
+    currentBudget = parseInt(sessionStorage.getItem('currentBudget'), 10) || defaultBudget;
     const savedTeams = JSON.parse(sessionStorage.getItem('teams')) || [];
     savedTeams.forEach(savedTeam => {
         const team = document.getElementById(savedTeam.id);
