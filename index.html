@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>nwCTF Cup Draft</title>
+    <title>nwCTF Cup Draft 0.1</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
 </head>
@@ -12,17 +12,18 @@
 
     <div class="budget-container">
         <label for="budgetInput">Set Team Budget: </label>
-        <input type="number" id="budgetInput" value="3300">
+        <input type="number" id="budgetInput" value="3350">
         <button onclick="setBudget()">Apply Budget</button>
         <button onclick="resetTeams()">Reset Teams</button>
         <button id="draftModeButton">Start Draft Mode</button>
+        <button id="undoButton" disabled>Undo</button>
     <div>
         <label for="round1Budget">Round 1 Budget Limit:</label>
         <input type="number" id="round1Budget" value="950">
         <label for="round2Budget">Round 2 Budget Limit:</label>
         <input type="number" id="round2Budget" value="350">
         <label for="round3Budget">Round 3 Budget Limit:</label>
-        <input type="number" id="round3Budget" value="500">
+        <input type="number" id="round3Budget" value="550">
         <label for="round4Budget">Round 4 Budget Limit:</label>
         <input type="number" id="round4Budget" value="500">
         <!--<label for="round4Budget">Round 5 Budget Limit:</label> -->
@@ -30,8 +31,20 @@
     </div>
     </div>
     <div class="container">
-        <div id="players" class="players">
-            <h2>Player List</h2>
+        <div class="players-section">
+            <div id="search" class="search">
+                <input type="text" id="searchInput" placeholder="Search players...">
+            </div>
+            <div id="ratingFilter" class="rating-filter">
+                <label for="minRating">Min Rating:</label>
+                <input type="number" id="minRating" min="0" max="1000" value="0">
+                <label for="maxRating">Max Rating:</label>
+                <input type="number" id="maxRating" min="0" max="1000" value="1000">
+            </div>
+            <div id="players" class="players">
+                
+                <div id="playerList"></div>
+            </div>
         </div>
         <div id="teams" class="teams">
             <div class="team-container">
