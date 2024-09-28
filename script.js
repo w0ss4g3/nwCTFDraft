@@ -17,6 +17,8 @@ let round3BudgetLimit = 0;
 let round4BudgetLimit = 0;
 //let round5BudgetLimit = 0;
 
+let draftHistory = [];
+
 document.getElementById('draftModeButton').addEventListener('click', () => {
     draftMode = !draftMode;
     if (draftMode) {
@@ -27,6 +29,8 @@ document.getElementById('draftModeButton').addEventListener('click', () => {
         stopDraftMode(true);
     }
 });
+
+document.getElementById('undoButton').addEventListener('click', undoLastDraftAction);
 
 function startDraftMode() {
     resetTeams();
@@ -73,6 +77,10 @@ function startDraftMode() {
     round = 1;
     teams.forEach(team => team.roundBudget = team.round1TotalBudget);
     highlightNextTeam();
+
+    // Clear draft history when starting a new draft
+    draftHistory = [];
+    updateUndoButtonState();
 }
 
 function stopDraftMode(manualStop = false) {
@@ -125,61 +133,64 @@ function stopDraftMode(manualStop = false) {
 
     // Initialize drag and drop functionality for the new player slots
     initializeDragAndDrop();
+
+    draftHistory = [];
+    updateUndoButtonState();
 }
 
 function highlightNextTeam() {
-    //console.log('highlightNextTeam called');
     console.log('Current round:', round);
     console.log('Teams player count:', teams.map(team => team.players));
 
     // Remove highlight from all teams
     document.querySelectorAll('.team').forEach(team => team.style.outline = '');
 
-    // If all teams have maxPlayersPerTeam players, stop the draft mode
-    if (teams.every(team => team.players === round)) {
+    // If all teams have picked in the current round, move to the next round
+    if (teams.every(team => team.players >= round)) {
         round++;
         // Do not exceed the maximum number of rounds
         if (round > maxPlayersPerTeam) {
             console.log('Maximum number of rounds reached.');
             stopDraftMode();
             return;
-        } else if (round === 2) {
-            teams.forEach(team => {
-                const playerPickedRating = team.playersPicked[0] || 0;  // Get the rating of the player picked in round 1
-                team.round2TotalBudget = team.round1TotalBudget - playerPickedRating + round2BudgetLimit;
-                team.roundBudget = team.round2TotalBudget;
-                updateTeamInfo(team.id);
-            });
-        } else if (round === 3) {
-            teams.forEach(team => {
-                const playerPickedRating = team.playersPicked[1] || 0;  // Get the rating of the player picked in round 2
-                team.round3TotalBudget = team.round2TotalBudget - playerPickedRating + round3BudgetLimit;
-                team.roundBudget = team.round3TotalBudget;
-                updateTeamInfo(team.id);
-            });
-        } else if (round === 4) {
-            teams.forEach(team => {
-                const playerPickedRating = team.playersPicked[2] || 0;  // Get the rating of the player picked in round 3
-                team.round4TotalBudget = team.round3TotalBudget - playerPickedRating + round4BudgetLimit;
-                team.roundBudget = team.round4TotalBudget;
-                updateTeamInfo(team.id);
-            });
-        }/* else if (round === 5) {
-            teams.forEach(team => {
-                const playerPickedRating = team.playersPicked[3] || 0;  // Get the rating of the player picked in round 4
-                team.round5TotalBudget = team.round4TotalBudget - playerPickedRating + round5BudgetLimit;
-                team.roundBudget = team.round5TotalBudget;
-                updateTeamInfo(team.id);
-            });
-        }*/
+        }
+        recalculateRoundBudgets();
         // Re-sort teams based on round budget
         teams.sort((a, b) => b.roundBudget - a.roundBudget || a.name.localeCompare(b.name));
     }
+
     // Find the next team that can pick a player
     const nextTeam = teams.find(team => team.players < round);
     if (nextTeam) {
         // Highlight the team
         document.getElementById(nextTeam.id).style.outline = '2px solid green';
+    }
+
+    updateUndoButtonState();
+}
+
+function recalculateRoundBudgets() {
+    if (round === 2) {
+        teams.forEach(team => {
+            const playerPickedRating = team.playersPicked[0] || 0;
+            team.round2TotalBudget = team.round1TotalBudget - playerPickedRating + round2BudgetLimit;
+            team.roundBudget = team.round2TotalBudget;
+            updateTeamInfo(team.id);
+        });
+    } else if (round === 3) {
+        teams.forEach(team => {
+            const playerPickedRating = team.playersPicked[1] || 0;
+            team.round3TotalBudget = team.round2TotalBudget - playerPickedRating + round3BudgetLimit;
+            team.roundBudget = team.round3TotalBudget;
+            updateTeamInfo(team.id);
+        });
+    } else if (round === 4) {
+        teams.forEach(team => {
+            const playerPickedRating = team.playersPicked[2] || 0;
+            team.round4TotalBudget = team.round3TotalBudget - playerPickedRating + round4BudgetLimit;
+            team.roundBudget = team.round4TotalBudget;
+            updateTeamInfo(team.id);
+        });
     }
 }
 
@@ -210,6 +221,15 @@ function loadPlayers() {
                 .catch(error => console.error('Error loading player data:', error));
         })
         .catch(error => console.error('Error loading flags data:', error));
+
+        // Add event listener to search input
+        document.getElementById('searchInput').addEventListener('input', function(event) {
+            const searchTerm = event.target.value;
+            filterPlayers(searchTerm);
+        });
+
+        document.getElementById('minRating').addEventListener('input', filterPlayers);
+        document.getElementById('maxRating').addEventListener('input', filterPlayers);
 }
 
 function createPlayerElements(players) {
@@ -221,6 +241,7 @@ function createPlayerElements(players) {
         playerDiv.draggable = true;
         
         playerDiv.id = player.Player; // Unique identifier
+        playerDiv.setAttribute('data-rating', player.Rating); // Add this line
 
         // Get flag URL
         const flagData = flagsData.find(flag => flag.Country === player.Country);
@@ -236,6 +257,29 @@ function createPlayerElements(players) {
         playerDiv.setAttribute('data-rating', player.Rating);
         playersContainer.appendChild(playerDiv);
     });
+}
+
+// Update the filterPlayers function
+function filterPlayers() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const minRating = parseInt(document.getElementById('minRating').value) || 0;
+    const maxRating = parseInt(document.getElementById('maxRating').value) || 1000;
+    
+    const playersContainer = document.getElementById('players');
+    const players = playersContainer.getElementsByClassName('player');
+
+    for (let player of players) {
+        const playerName = player.textContent.toLowerCase();
+        const playerRating = parseInt(player.getAttribute('data-rating'));
+        
+        if (playerName.includes(searchTerm) && 
+            playerRating >= minRating && 
+            playerRating <= maxRating) {
+            player.style.display = '';
+        } else {
+            player.style.display = 'none';
+        }
+    }
 }
 
 function fillEmptySlots(team) {
@@ -299,6 +343,66 @@ function createTeamElements(players) {
     }
 }
 
+function undoLastDraftAction() {
+    if (draftHistory.length === 0) return;
+
+    const lastAction = draftHistory.pop();
+    if (lastAction.action === 'draft') {
+        const player = document.getElementById(lastAction.player);
+        const fromTeam = document.getElementById(lastAction.fromTeam);
+        const toTeam = document.getElementById(lastAction.toTeam);
+
+        // Move the player back to the original team or player list
+        if (fromTeam.id === 'players') {
+            fromTeam.appendChild(player);
+            sortPlayers();
+        } else {
+            const emptySlot = toTeam.querySelector('.player-slot') || document.createElement('div');
+            emptySlot.className = 'player-slot';
+            toTeam.replaceChild(emptySlot, player);
+            fromTeam.appendChild(player);
+        }
+
+        // Remove 'drafted' class from player
+        player.classList.remove('drafted');
+
+        // Update team data
+        const teamData = teams.find(t => t.id === toTeam.id);
+        if (teamData) {
+            teamData.players--;
+            teamData.roundBudget += parseInt(player.getAttribute('data-rating'), 10);
+            teamData.playersPicked.pop();  // Remove the last picked player
+        }
+
+        // Update team info
+        updateTeamInfo(toTeam.id);
+        if (fromTeam.id !== 'players') {
+            updateTeamInfo(fromTeam.id);
+        }
+
+        // Revert to previous round if necessary
+        if (teams.every(team => team.players < round)) {
+            round--;
+            // Recalculate round budgets when reverting to previous round
+            recalculateRoundBudgets();
+        }
+
+        // Re-sort teams based on round budget
+        teams.sort((a, b) => b.roundBudget - a.roundBudget || a.name.localeCompare(b.name));
+
+        // Re-highlight the next team
+        highlightNextTeam();
+    }
+
+    updateUndoButtonState();
+}
+
+// New: Function to update the Undo button state
+function updateUndoButtonState() {
+    const undoButton = document.getElementById('undoButton');
+    undoButton.disabled = !draftMode || draftHistory.length === 0;
+}
+
 function initializeDragAndDrop() {
     document.querySelectorAll('.player').forEach(player => {
         player.addEventListener('dragstart', event => {
@@ -341,6 +445,13 @@ function initializeDragAndDrop() {
                             updateTeamInfo(team.id);
                             // Save changes
                             saveData();
+                            // New: Add this action to the draft history
+                            draftHistory.push({
+                                action: 'draft',
+                                player: player.id,
+                                fromTeam: oldTeamId,
+                                toTeam: team.id
+                            });
                             // After player has been added, check whether draft mode should continue
                             highlightNextTeam();
                         }
