@@ -678,5 +678,7 @@ function loadData() {
     // Initialize drag and drop functionality after player slots are created
     initializeDragAndDrop();
 }
+
+// Initialise:
 loadData();
 loadPlayers();
