@@ -1,6 +1,6 @@
 const display = document.getElementById('display');
-const startStopButton = document.getElementById('startStop');
-const resetButton = document.getElementById('reset');
+const startStopButton = document.getElementById('startStopTimer');
+const resetButton = document.getElementById('resetTimer');
 
 let timerInterval;
 let seconds = 0;
@@ -29,14 +29,16 @@ function resetTimer() {
     clearInterval(timerInterval);
     seconds = 0;
     display.textContent = formatTime(seconds);
-    startStopButton.textContent = 'Start';
+    if (startStopButton.textContent === 'Stop') {
+        startTimer();
+    }
 }
 
 startStopButton.addEventListener('click', () => {
-    if (timerInterval) {
-        stopTimer();
-    } else {
+    if (startStopButton.textContent === 'Start') {
         startTimer();
+    } else {
+        stopTimer();
     }
 });
 
