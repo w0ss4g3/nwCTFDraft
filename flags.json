@@ -231,6 +231,7 @@
     {"Country": "Viet Nam", "Code": "VN", "Flag": "https://www.worldometers.info/img/flags/vm-flag.gif"},
     {"Country": "Virgin Islands, British", "Code": "VG", "Flag": "https://www.worldometers.info/img/flags/vi-flag.gif"},
     {"Country": "Virgin Islands, U.S.", "Code": "VI", "Flag": "https://www.worldometers.info/img/flags/vq-flag.gif"},
+    {"Country": "Wales", "Code": "WA", "Flag": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Flag_of_Wales.svg/128px-Flag_of_Wales.svg.gif"},
     {"Country": "Wallis and Futuna", "Code": "WF", "Flag": "https://www.worldometers.info/img/flags/wf-flag.gif"},
     {"Country": "Western Sahara", "Code": "EH", "Flag": "https://www.worldometers.info/img/flags/wi-flag.gif"},
     {"Country": "Yemen", "Code": "YE", "Flag": "https://www.worldometers.info/img/flags/ym-flag.gif"},
