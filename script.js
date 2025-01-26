@@ -8,7 +8,7 @@ let teams = [];
 let captains = {};
 
 let maxPlayersPerTeam = 4;
-let numTeams = 15;
+let numTeams = 16;
 
 let defaultBudget = 3350; // default budget, only used on reset/startup
 let firstRoundBudget = 1000;
